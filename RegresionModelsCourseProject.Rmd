@@ -1,0 +1,101 @@
+---
+title: "Regression Models Course Project"
+author: "Jon Taylor"
+date: "December 18, 2016"
+output: pdf_document
+---
+
+#Executive Summary
+
+In this analysis we will use regression modeling techniues and the mtcars dataset collected by Motor Trend magazine to answer the following questions.
+
+1. “Is an automatic or manual transmission better for MPG”
+2. "Quantify the MPG difference between automatic and manual transmissions"
+
+Using exploratory anaysis, model selection, and regression diagnostics we will show that:
+
+1. Manual transmissions are better for MPG.
+2. The difference between manual and automatic transmissions is about 2.95 MPG.
+
+#Exploratory Analysis
+
+First lets see what the data looks like. From the help file, we know [[am]] is a factor where [[am=0]] for automatic transmission and [[am=1]] for manual transmission. 
+
+```{R}
+library(corrplot)
+data(mtcars)
+
+corrplot(cor(mtcars), method="ellipse")
+```
+
+From what we know about cars, engine displacement, number of cylinders, horsepower, and weight are likely to be collinear variables which appears to be the case here. 
+
+The pairs plot also seems to show that MPG is higher for manual transmissions, but the 95% confidence interval is fairly large so we need to do more analysis.
+
+
+
+```{R}
+boxplot(data = mtcars, mpg~am)
+
+summary(mtcars$mpg[mtcars$am==0])
+summary(mtcars$mpg[mtcars$am==1])
+```
+
+This boxplot also appears to show that MPG is higher for manual transmissions since the manual transmission 1st quartile is higher than the automatic transmission 3rd quartile. Let's continue on to model selection to quantify the difference. 
+
+#Model Selection
+
+We'll start by building a univariate linear regression model.
+
+```{R}
+summary(lm(mpg ~ factor(am), data=mtcars)) #make sure to include factor()
+
+plot(mtcars$mpg, resid(lm(mpg ~ factor(am), data=mtcars)))
+#residualPlots(lm(mpg ~ factor(am), data=mtcars))
+```
+
+This model says that the transmission is statistically significant and produces a 7.245 difference in MPG, but we need to verify the model. By plotting the residuals we can check for anything weird going on. The residual plot forming two paralell lines suggests that one or more variables are missing from this model. So let's now go to a multivariate regression model.
+
+```{R}
+fit <- (lm(mpg ~ cyl+disp+hp+drat+wt+qsec+factor(vs)+factor(am)+gear+carb,
+           data=mtcars))
+summary(fit)
+plot(mtcars$mpg, resid(fit))
+```
+
+Well, now we have too many variables,which can lead  to increased standard error. It appears that several of the variables we included are poor predictors of MPG. Also, from what we saw earlier in the exploratory analysis, there may be several collinear variables that can throw off our model. We need a way to pair the predictors down and select only the best. 
+
+```{R}
+library(MASS)
+
+fit <- lm(mpg ~ cyl+disp+hp+drat+wt+qsec+factor(vs)+factor(am)+gear+carb, 
+          data = mtcars)
+
+fit.step <- stepAIC(fit, trace=FALSE)
+summary(fit.step)
+plot(mtcars$mpg, resid(fit.step))
+```
+
+Using stepwise selection, we determined that weight, quarter mile time, and transmission are the best three predictors of MPG and can predict almost 85 percent of the variance in MPG.
+
+Weight is negatively correlated with MPG which makes sense. Quarter Mile Time is positively correlated with MPG which also make sense. Quarter Mile Time is likely a function of other variables so it may be worth exploring more in future analyses.
+
+#Diagnostics
+
+Now let's check our model's diagnostics to make sure everything makes sense. We already plotted residual vs actual values. 
+
+
+```{R}
+library(car)
+residualPlot(fit.step)
+qqPlot(fit.step)
+outlierTest(fit.step)
+
+```
+
+
+
+
+#Appendix
+
+
