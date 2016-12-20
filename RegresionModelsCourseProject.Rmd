@@ -2,7 +2,7 @@
 title: "Regression Models Course Project"
 author: "Jon Taylor"
 date: "December 18, 2016"
-output: html_document
+output: pdf_document
 ---
 
 ###Executive Summary
@@ -12,7 +12,7 @@ In this analysis we will use regression modeling techniues and the mtcars datase
 1. “Is an automatic or manual transmission better for MPG”
 2. "Quantify the MPG difference between automatic and manual transmissions"
 
-Using exploratory anaysis, model selection, and regression diagnostics we will show that:
+Using exploratory anaysis, linear regression models, and regression diagnostics we will show that:
 
 1. Cars with manual transmissions have higher MPG.
 2. The difference between manual and automatic transmissions is about 2.95 MPG.
@@ -44,7 +44,7 @@ This boxplot also appears to show that MPG is higher for manual transmissions si
 We'll start by building a univariate linear regression model.
 
 ```{R uni, eval=FALSE}
-summary(lm(mpg ~ factor(am), data=mtcars)) #make sure to include factor()
+summary(lm(mpg ~ factor(am), data=mtcars))$coef #make sure to include factor()
 plot(mtcars$mpg, resid(lm(mpg ~ factor(am), data=mtcars)))
 ```
 
@@ -53,7 +53,7 @@ This model says that the transmission is statistically significant and produces 
 ```{R multi, eval=FALSE}
 fit <- (lm(mpg ~ cyl+disp+hp+drat+wt+qsec+factor(vs)+factor(am)+gear+carb,
            data=mtcars))
-summary(fit)
+summary(fit)$coef
 plot(mtcars$mpg, resid(fit))
 ```
 
@@ -64,7 +64,7 @@ library(MASS)
 fit <- lm(mpg ~ cyl+disp+hp+drat+wt+qsec+factor(vs)+factor(am)+gear+carb, 
           data = mtcars)
 fit.step <- stepAIC(fit, trace=FALSE)
-summary(fit.step)
+summary(fit.step)$coef
 plot(mtcars$mpg, resid(fit.step))
 ```
 
@@ -91,27 +91,31 @@ We used linear regression to determine that given everything else held constant,
 
 ###Appendix
 
+###Correlation Pairs
 ```{r corrs2, ref.label='corrs', echo = FALSE, fig.height=4,fig.width=4}
 ```
 
+###Boxplot and Quantiles
 ```{r boxplot2, ref.label='boxplot', echo = FALSE, fig.height=4,fig.width=4}
 ```
 
+###Univariate Linear Model
 ```{r uni2, ref.label='uni', echo = FALSE, fig.height=4,fig.width=4}
 ```
 
+###Multivariate Linear Model
 ```{r multi2, ref.label='multi', echo = FALSE, fig.height=4,fig.width=4}
 ```
 
+
+###Stepwise Variable Selection
 ```{r step2, ref.label='step', echo = FALSE, fig.height=4,fig.width=4}
 ```
 
+
+###Regression Diagnostics
 ```{r diag2, ref.label='diag', echo = FALSE, fig.height=4,fig.width=4}
 ```
 
-corrs
-boxplot
-uni
-multi
-step diag
+
 
